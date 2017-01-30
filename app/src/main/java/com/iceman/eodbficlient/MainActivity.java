@@ -1,6 +1,9 @@
 package com.iceman.eodbficlient;
 
 import android.graphics.Color;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
     TextView textViewProcess;
     ImageView imageViewBFI;
     TextView textViewStatus;
+    String processname1 = null;
+    String processname2 = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +57,24 @@ public class MainActivity extends AppCompatActivity {
         mDatabase2.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                String processname = dataSnapshot.getValue().toString();
-                textViewProcess.setText("Process Name : "+processname);
-                Log.d("Disini", processname);
-                if(processname.equals("SP CONFIGURE EOD AFTER"))
+                processname1 = dataSnapshot.getValue().toString();
+                textViewProcess.setText("Process Name : "+processname1);
+
+                if(!processname1.equals(processname2))
+                {
+                    try {
+                        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                        Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                        r.play();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                processname2 = processname1;
+
+                Log.d("Disini", processname1);
+                if(processname1.equals("SP CONFIGURE EOD AFTER"))
                 {
                     textViewStatus.startAnimation(AnimationUtils.loadAnimation(MainActivity.this, android.R.anim.slide_in_left));
                     textViewStatus.setText("EOD Completed");
@@ -74,6 +93,5 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 }
