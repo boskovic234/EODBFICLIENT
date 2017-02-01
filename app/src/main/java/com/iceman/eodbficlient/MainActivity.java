@@ -2,14 +2,17 @@ package com.iceman.eodbficlient;
 
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
@@ -23,9 +26,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.messaging.RemoteMessage;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity
+        implements ForceUpdateChecker.OnUpdateNeededListener{
 
     private DatabaseReference mDatabase1;
     private DatabaseReference mDatabase2;
@@ -36,10 +40,12 @@ public class MainActivity extends AppCompatActivity {
     String processname1 = null;
     String processname2 = null;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         mDatabase1 = FirebaseDatabase.getInstance().getReference().child("EODDate");
         mDatabase2 = FirebaseDatabase.getInstance().getReference().child("ProcessName");
@@ -48,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         imageViewBFI = (ImageView) findViewById(R.id.IVBFI);
         imageViewBFI.setImageResource(R.drawable.bfi);
         textViewStatus = (TextView) findViewById(R.id.TVStatus);
+
+        ForceUpdateChecker.with(this).onUpdateNeeded(this).check();
 
         mDatabase1.addValueEventListener(new ValueEventListener() {
             @Override
@@ -115,13 +123,35 @@ public class MainActivity extends AppCompatActivity {
         notificationBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
         notificationBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
 
-//        Intent notificationIntent = new Intent(this, MainActivity.class);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-//                notificationIntent, 0);
-//        notification.setLatestEventInfo(MainActivity.this, pendingIntent);
-
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
         notificationManager.notify(1, notificationBuilder.build());
+    }
+
+
+    public void onUpdateNeeded(final String updateUrl) {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("New version available")
+                .setMessage("Please, update app to new version to continue reposting.")
+                .setPositiveButton("Update",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                redirectStore(updateUrl);
+                            }
+                        }).setNegativeButton("No, thanks",
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                            }
+                        }).create();
+        dialog.show();
+    }
+
+    private void redirectStore(String updateUrl) {
+        final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(updateUrl));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
 }
