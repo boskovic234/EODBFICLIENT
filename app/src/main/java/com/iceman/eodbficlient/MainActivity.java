@@ -1,11 +1,18 @@
 package com.iceman.eodbficlient;
 
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -16,6 +23,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.RemoteMessage;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                    Notification();
                 }
 
                 processname2 = processname1;
@@ -94,4 +103,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void Notification()
+    {
+        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(MainActivity.this)
+                .setSmallIcon(android.R.drawable.stat_notify_error)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher))
+                .setContentTitle("EOD BFI")
+                .setContentText("Running On Process : "+processname1);
+        notificationBuilder.setDefaults(Notification.DEFAULT_SOUND);
+        notificationBuilder.setDefaults(Notification.DEFAULT_LIGHTS);
+        notificationBuilder.setDefaults(Notification.DEFAULT_VIBRATE);
+
+//        Intent notificationIntent = new Intent(this, MainActivity.class);
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+//                notificationIntent, 0);
+//        notification.setLatestEventInfo(MainActivity.this, pendingIntent);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(MainActivity.this);
+        notificationManager.notify(1, notificationBuilder.build());
+    }
+
 }
